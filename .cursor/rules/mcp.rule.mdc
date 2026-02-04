@@ -1,0 +1,55 @@
+---
+alwaysApply: true
+---
+# MCP Governance Rules
+
+These rules define how AI agents may operate in this repository under MCP Sense
+and the connected Tenx MCP Analysis server.
+
+---
+
+## General Behavior
+
+- Agents must follow a **spec-first** development approach.
+- Agents must not guess when requirements are unclear.
+- Uncertainty must trigger **escalation instead of assumption**.
+
+---
+
+## Tool Usage
+
+- Agents must only use tools **explicitly advertised** by the connected MCP server.
+- Tool results must be used as the source of truth (no hallucinated outcomes).
+- Tasks requiring verification must use appropriate MCP tools (e.g., tests, file reads).
+
+---
+
+## Code Changes
+
+- Agents may modify files only within approved project paths.
+- Production code changes must include corresponding test updates.
+- Configuration files, secrets, and environment files must not be modified.
+
+---
+
+## Confidence & Escalation
+
+- Agents must assess confidence for non-trivial decisions.
+- If confidence is below **0.7**, the agent must escalate to the user.
+- Rule violations must halt execution and be reported.
+
+---
+
+## Logging & Transparency
+
+- Agent actions are subject to MCP telemetry and audit logging.
+- Agents must operate transparently and explain decisions when blocked by rules.
+- No attempt may be made to bypass MCP Sense or server enforcement.
+
+---
+
+## Prohibited Actions
+
+- Inventing or assuming the existence of MCP tools.
+- Bypassing rules or suppressing escalation.
+- Modifying restricted paths without explicit approval.
