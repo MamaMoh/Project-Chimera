@@ -33,6 +33,51 @@ Purpose: Define system constraints, integrations, and non-functional requirement
 }
 ```
 
+## API Contracts (Planner -> Worker Request)
+```json
+{
+  "task_id": "uuid-v4-string",
+  "task_type": "generate_content | reply_comment | execute_transaction",
+  "priority": "high | medium | low",
+  "context": {
+    "goal_description": "string",
+    "persona_constraints": ["string"],
+    "required_resources": ["mcp://resource/path"],
+    "budget_limit_usd": "number"
+  },
+  "acceptance_criteria": ["string"],
+  "created_at": "timestamp",
+  "status": "pending"
+}
+```
+
+## API Contracts (Worker -> Judge Response)
+```json
+{
+  "task_id": "uuid-v4-string",
+  "status": "success | failure | retry",
+  "confidence_score": "float 0.0-1.0",
+  "output": {
+    "type": "text | image | video | transaction",
+    "payload": "object"
+  },
+  "artifacts": ["uri-or-path"],
+  "traces": "short reasoning summary",
+  "created_at": "timestamp"
+}
+```
+
+## API Contracts (Judge -> Orchestrator Decision)
+```json
+{
+  "task_id": "uuid-v4-string",
+  "decision": "approve | reject | escalate",
+  "rationale": "string",
+  "state_version": "string",
+  "created_at": "timestamp"
+}
+```
+
 ## Database Schema (Video Metadata)
 ```mermaid
 erDiagram

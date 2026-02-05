@@ -1,0 +1,9 @@
+reviews:
+  profile: "chore"
+  high_level_summary: true
+  request_changes_workflow: true
+  extra_instructions: |
+    - Enforce spec alignment: changes must reference `specs/` or `docs/srs.md`.
+    - Verify MCP-only external action rule (no direct API calls).
+    - Flag any secrets or credentials in code or configs.
+    - Ensure tests exist or are updated for new behavior.

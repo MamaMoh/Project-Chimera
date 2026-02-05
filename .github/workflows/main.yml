@@ -1,2 +1,29 @@
-# GitHub Actions
-# Purpose: Placeholder CI pipeline.
+name: ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: make setup
+      - name: Spec check
+        run: make spec-check
+      - name: Lint policy check
+        run: test -f quality/linting.md
+      - name: Security policy check
+        run: test -f quality/security.md
+      - name: Testing policy check
+        run: test -f quality/testing.md
+      - name: Run tests
+        run: make test

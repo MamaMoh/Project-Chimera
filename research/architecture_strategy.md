@@ -81,6 +81,11 @@ graph TD
 
 HITL occurs **after content generation and before publishing**. The Judge validates output for policy, confidence, and sensitive topics. Only approved outputs are published. Escalation is mandatory for low confidence or sensitive topics.
 
+### Why this placement
+- It protects brand safety without blocking upstream creativity.
+- It avoids publishing low-confidence outputs while keeping throughput high.
+- It centralizes responsibility in the Judge before any external action.
+
 ---
 
 ## 5. Data Storage Strategy
@@ -88,6 +93,10 @@ HITL occurs **after content generation and before publishing**. The Judge valida
 ### Video Metadata (High-Velocity)
 - **Primary Choice:** PostgreSQL for transactional integrity and queryability.
 - **Rationale:** Supports multi-tenant data isolation, analytics, and strong constraints.
+
+### Why not NoSQL here
+- Strong relationships between videos, assets, tags, and metrics favor relational modeling.
+- Consistent queries and constraints reduce operational drift across tenants.
 
 ### Semantic Memory
 - **Weaviate** for vector search over personas, memories, and context snippets.

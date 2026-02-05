@@ -5,3 +5,8 @@ Purpose: Describe skill interfaces, contracts, and constraints.
 - Inputs and outputs are defined per skill.
 - Skills do not call external APIs directly; they call MCP tools only.
 - Each skill must declare required resources and expected output shape.
+
+## Skills Registry
+- `skill_download_youtube`: download video assets for processing.
+- `skill_transcribe_audio`: transcribe audio to text segments.
+- `skill_post_social`: publish content to social platforms.
