@@ -73,3 +73,60 @@ graph TD
     C -->|Approved| D[Publishing Agent]
     C -->|Rejected| B
     D --> E[Metrics & Feedback Store]
+```
+
+---
+
+## 4. Human-in-the-Loop (HITL) Placement
+
+HITL occurs **after content generation and before publishing**. The Judge validates output for policy, confidence, and sensitive topics. Only approved outputs are published. Escalation is mandatory for low confidence or sensitive topics.
+
+---
+
+## 5. Data Storage Strategy
+
+### Video Metadata (High-Velocity)
+- **Primary Choice:** PostgreSQL for transactional integrity and queryability.
+- **Rationale:** Supports multi-tenant data isolation, analytics, and strong constraints.
+
+### Semantic Memory
+- **Weaviate** for vector search over personas, memories, and context snippets.
+
+### Short-Term Cache and Queues
+- **Redis** for task queues and short-term memory windows.
+
+---
+
+## 6. MCP Integration Strategy
+
+All external APIs are accessed via MCP servers:
+- Social publishing (Twitter, Instagram, Threads)
+- Knowledge sources (news, trends)
+- Commerce (Coinbase AgentKit)
+
+This decouples agent logic from external API volatility and centralizes governance.
+
+---
+
+## 7. Governance and Safety
+
+- All agents adhere to `agents/AGENTS.md` and persona constraints in `agents/personas/SOUL.md`.
+- Judge enforces policy, confidence thresholds, and sensitive-topic filters.
+- All tool usage is logged via MCP Sense for traceability.
+
+---
+
+## 8. Architecture Diagram (System View)
+
+```mermaid
+flowchart LR
+    Orchestrator --> Planner
+    Planner --> WorkerPool
+    WorkerPool --> Judge
+    Judge --> Orchestrator
+    Orchestrator --> MCP[MCP Host]
+    MCP --> MCPServers[MCP Servers]
+    MCPServers --> ExternalAPIs[External APIs]
+    WorkerPool --> Memory[Weaviate/Redis]
+    Orchestrator --> DB[PostgreSQL]
+```
