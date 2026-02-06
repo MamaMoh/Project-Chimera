@@ -1,9 +1,8 @@
+"""Judge – reviews Result and returns Decision. No logic implemented; see research/architecture_strategy.md."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-
-from services.worker.worker_service import Result
 
 
 @dataclass(frozen=True)
@@ -16,19 +15,9 @@ class Decision:
 
 
 class JudgeService:
-    def review_result(self, result: Result, state_version: str) -> Decision:
-        decision, rationale = self._decide(result)
-        return Decision(
-            task_id=result.task_id,
-            decision=decision,
-            rationale=rationale,
-            state_version=state_version,
-            created_at=datetime.now(timezone.utc).isoformat(),
-        )
+    """Reviews result → approve / escalate / reject. Not implemented."""
 
-    def _decide(self, result: Result) -> tuple[str, str]:
-        if result.confidence_score >= 0.9:
-            return "approve", "High confidence score."
-        if result.confidence_score >= 0.7:
-            return "escalate", "Medium confidence score; HITL required."
-        return "reject", "Low confidence score."
+    def review_result(self, result: Any, state_version: str) -> Decision:
+        raise NotImplementedError(
+            "Judge logic not implemented. See research/architecture_strategy.md §2.3 and §3."
+        )

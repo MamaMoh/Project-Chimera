@@ -1,0 +1,29 @@
+﻿# Project Chimera Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-06
+
+## Active Technologies
+
+- Python 3.12+ + Standard library (dataclasses, uuid, datetime); existing services in `services/` and `orchestrator/` (001-main)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+cd src; pytest; ruff check .
+
+## Code Style
+
+Python 3.12+: Follow standard conventions
+
+## Recent Changes
+
+- 001-main: Added Python 3.12+ + Standard library (dataclasses, uuid, datetime); existing services in `services/` and `orchestrator/`
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
