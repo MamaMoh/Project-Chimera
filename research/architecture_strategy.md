@@ -1,141 +1,282 @@
-# Architecture Strategy — Project Chimera
+# Project Chimera – Architecture Strategy (Paraphrased & Diagrammed)
 
-## 1. Introduction
-
-Project Chimera aims to build a **factory for Autonomous AI Influencers**—digital agents capable of researching trends, generating content, and managing engagement with minimal human intervention.
-
-This document defines the **architectural strategy** for Project Chimera before any implementation begins. The goal is to ensure the system is **scalable, governable, observable, and safe**, especially in an environment where multiple AI agents collaborate.
-
-This strategy follows the principles of:
-- Spec-Driven Development (SDD)
-- Agentic Orchestration
-- Traceability and Governance via MCP Sense
+**Version:** 1.0.0  
+**Date:** February 4, 2025  
+**Status:** Draft for Team Review
 
 ---
 
-## 2. Architectural Goals
+## 1. Overview
 
-The architecture of Project Chimera is designed to:
+Project Chimera is an autonomous AI influencer system that researches trends, generates content, and engages audiences with minimal human oversight.
 
-- Prevent fragile prompt-based systems
-- Support multiple autonomous agents working together
-- Enable human oversight at critical safety points
-- Ensure reproducibility and auditability of agent behavior
-- Scale content production without sacrificing control
+**Key principles:**
 
----
-
-## 3. Agent Pattern Selection
-
-### Selected Pattern: Hierarchical Swarm
-
-#### Rationale
-
-The **Hierarchical Swarm** pattern is best suited for Project Chimera because:
-
-- Content creation involves multiple specialized tasks (research, scripting, publishing)
-- Agents must operate semi-independently while aligning with shared goals
-- A central authority is required to enforce rules, specs, and safety constraints
-
-This pattern mirrors real-world creative organizations where specialists perform focused work under a coordinating authority.
+- **Spec-Driven Development (SDD)** – All code is anchored in formal specifications.
+- **Agentic Orchestration** – Planner, Worker, Judge agents have clearly defined roles.
+- **Robust Infrastructure** – Scalable, traceable, and fault-tolerant.
 
 ---
 
-### Agent Roles (Conceptual)
+## 2. Agent Architecture Approach
 
-- **Governor Agent**
-  - Enforces specifications
-  - Coordinates execution
-  - Resolves conflicts between agents
+### 2.1 Evaluated Patterns (Textual)
 
-- **Research Agent**
-  - Identifies trends
-  - Collects platform insights
-  - Produces structured research outputs
+| Pattern                | Score  | Notes                                                                 |
+| ---------------------- | ------ | --------------------------------------------------------------------- |
+| **Hierarchical Swarm** | 9/10   | Central Chief Agent manages sub-agents. Clear authority, scalable, fault-isolated. Single point of failure risk. |
+| **Sequential Chain**  | 4/10   | Linear processing pipeline. Simple, predictable, but brittle.         |
+| **Mesh Network**       | 7/10   | Peer-to-peer agent collaboration. Resilient but coordination-heavy. |
+| **Actor Model**       | 8/10   | Asynchronous message-passing. High concurrency, complex debugging.   |
 
-- **Content Generation Agent**
-  - Creates scripts, captions, and creative assets
-  - Operates strictly within approved specifications
+**Decision:** Core **Hierarchical Swarm** with **Mesh fallback**.
 
-- **Publishing Agent**
-  - Handles posting workflows
-  - Interfaces with social platforms
-  - Reports engagement metrics
-
----
-
-### Agent Interaction Flow
+### 2.2 Conceptual Agent Structure
 
 ```mermaid
-graph TD
-    A[Research Agent] --> B[Content Generation Agent]
-    B --> C[Human Approval Gate]
-    C -->|Approved| D[Publishing Agent]
-    C -->|Rejected| B
-    D --> E[Metrics & Feedback Store]
+graph LR
+    H[Human Operator] --> HA[Approval Queue]
+    CA[Chief Agent] --> TF[Trend Fetcher]
+    CA --> CG[Content Generator]
+    CA --> EM[Engagement Manager]
+    CA --> QA[Quality Assessor]
+
+    CG --> SK1[skill_download_video]
+    CG --> SK2[skill_download_youtube]
+    CG --> SK3[skill_transcribe_audio]
+    EM --> SK4[skill_post_social]
+    QA --> SK3
+
+    TF --> TR[Trend APIs]
+    EM --> SM[Social Media APIs]
+    CA --> OC[OpenClaw Network]
+    HA --> CA
 ```
 
----
-
-## 4. Human-in-the-Loop (HITL) Placement
-
-HITL occurs **after content generation and before publishing**. The Judge validates output for policy, confidence, and sensitive topics. Only approved outputs are published. Escalation is mandatory for low confidence or sensitive topics.
-
-### Why this placement
-- It protects brand safety without blocking upstream creativity.
-- It avoids publishing low-confidence outputs while keeping throughput high.
-- It centralizes responsibility in the Judge before any external action.
-
----
-
-## 5. Data Storage Strategy
-
-### Video Metadata (High-Velocity)
-- **Primary Choice:** PostgreSQL for transactional integrity and queryability.
-- **Rationale:** Supports multi-tenant data isolation, analytics, and strong constraints.
-
-### Why not NoSQL here
-- Strong relationships between videos, assets, tags, and metrics favor relational modeling.
-- Consistent queries and constraints reduce operational drift across tenants.
-
-### Semantic Memory
-- **Weaviate** for vector search over personas, memories, and context snippets.
-
-### Short-Term Cache and Queues
-- **Redis** for task queues and short-term memory windows.
-
----
-
-## 6. MCP Integration Strategy
-
-All external APIs are accessed via MCP servers:
-- Social publishing (Twitter, Instagram, Threads)
-- Knowledge sources (news, trends)
-- Commerce (Coinbase AgentKit)
-
-This decouples agent logic from external API volatility and centralizes governance.
-
----
-
-## 7. Governance and Safety
-
-- All agents adhere to `agents/AGENTS.md` and persona constraints in `agents/personas/SOUL.md`.
-- Judge enforces policy, confidence thresholds, and sensitive-topic filters.
-- All tool usage is logged via MCP Sense for traceability.
-
----
-
-## 8. Architecture Diagram (System View)
+### 2.3 Runtime Flow (Orchestrator Cycle)
 
 ```mermaid
 flowchart LR
-    Orchestrator --> Planner
-    Planner --> WorkerPool
-    WorkerPool --> Judge
-    Judge --> Orchestrator
-    Orchestrator --> MCP[MCP Host]
-    MCP --> MCPServers[MCP Servers]
-    MCPServers --> ExternalAPIs[External APIs]
-    WorkerPool --> Memory[Weaviate/Redis]
-    Orchestrator --> DB[PostgreSQL]
+    main[main.py] --> Orch[Orchestrator]
+    Orch --> Planner[Planner Service]
+    Planner --> Worker[Worker Service]
+    Worker --> Judge[Judge Service]
+    Judge --> Orch
 ```
+
+- **Planner:** Creates tasks with goal, priority, and acceptance criteria.
+- **Worker:** Executes tasks using skills and returns results.
+- **Judge:** Reviews results → approves, escalates, or rejects.
+
+---
+
+## 3. Human-in-the-Loop (HITL) Safety
+
+```mermaid
+sequenceDiagram
+    participant Agent as Chimera Agent
+    participant Queue as Approval Queue
+    participant Human as Human Operator
+    participant Social as Social Media APIs
+
+    Agent->>Queue: Submit Content for Review
+    Queue->>Human: Notify for Approval
+
+    alt Approved
+        Human->>Queue: Approve
+        Queue->>Social: Publish Content
+        Social-->>Agent: Confirmation
+    else Rejected
+        Human->>Queue: Reject with Feedback
+        Queue->>Agent: Feedback for Revision
+    end
+
+    alt Timeout
+        Queue->>Agent: Auto-expire pending items
+    end
+```
+
+---
+
+## 4. Database Strategy
+
+**Hybrid Architecture:** PostgreSQL + Redis + Elasticsearch
+
+```mermaid
+erDiagram
+    USER ||--o{ CONTENT : creates
+    USER ||--o{ ENGAGEMENT : performs
+    CONTENT ||--o{ ENGAGEMENT : receives
+    CONTENT }|--|| TREND : sourced_from
+    CONTENT }|--|| SKILL : generated_by
+
+    USER {
+        uuid id PK
+        string username
+        jsonb preferences
+        timestamp created_at
+    }
+    CONTENT {
+        uuid id PK
+        uuid user_id FK
+        uuid trend_id FK
+        string content_type
+        jsonb metadata
+        string status
+        timestamp created_at
+        timestamp published_at
+    }
+    ENGAGEMENT {
+        uuid id PK
+        uuid user_id FK
+        uuid content_id FK
+        string engagement_type
+        jsonb details
+        timestamp created_at
+    }
+    TREND {
+        uuid id PK
+        string platform
+        string topic
+        float score
+        jsonb raw_data
+        timestamp fetched_at
+    }
+    SKILL {
+        string name PK
+        string version
+        jsonb input_schema
+        jsonb output_schema
+        boolean enabled
+    }
+```
+
+---
+
+## 5. Agent Communication Protocols
+
+```mermaid
+graph LR
+    Chimera[Chimera Agent] --> Registry[OpenClaw Registry]
+    Chimera --> PubSub[Pub/Sub Module]
+    Chimera --> Heartbeat[Heartbeat Generator]
+    Chimera --> Capability[Capability Advertiser]
+    OtherAgent[Other Agents] --> Registry
+    OtherAgent --> Chimera
+```
+
+---
+
+## 6. Skill Layer Interaction
+
+```mermaid
+graph TD
+    Worker --> SK1[skill_download_video]
+    Worker --> SK2[skill_download_youtube]
+    Worker --> SK3[skill_transcribe_audio]
+    Worker --> SK4[skill_post_social]
+
+    SK1 --> Result[Task Result]
+    SK2 --> Result
+    SK3 --> Result
+    SK4 --> Result
+```
+
+---
+
+## 7. Infrastructure Overview
+
+| Component        | Technology                          | Purpose                    |
+| ---------------- | ----------------------------------- | -------------------------- |
+| **Runtime**      | Python 3.11+                        | Agent logic                |
+| **Dependencies** | uv                                  | Dependency management      |
+| **Containers**   | Docker                              | Reproducible environment   |
+| **Data**         | PostgreSQL + Redis + Elasticsearch | Storage & caching          |
+| **CI/CD**        | GitHub Actions                      | Automation & testing       |
+| **Telemetry**    | MCP Sense                           | Logging & auditing         |
+
+**Directory structure (narrative):**
+
+- `main.py` – Entrypoint
+- `orchestrator/` – Chief Agent
+- `services/` – Sub-agents (Planner, Worker, Judge)
+- `skills/` – Invokable agent abilities
+- `specs/` – Spec-driven documentation
+- `agents/` – Governance & personas
+- `schemas/` – Shared JSON schemas
+- `policies/` – Sensitive content & disclosure rules
+- `tests/` – Unit tests
+
+---
+
+## 8. Deployment & CI/CD Flow
+
+```mermaid
+flowchart TB
+    subgraph Dev["Developer"]
+        Code[Code / Specs]
+        Push[Push / PR]
+    end
+
+    subgraph CI["GitHub Actions"]
+        Checkout[Checkout]
+        Setup[Setup Python]
+        Deps[Install deps - make setup]
+        SpecCheck[Spec check - make spec-check]
+        Lint[Lint / Security / Test policy checks]
+        Test[make test]
+    end
+
+    subgraph Build["Build & Run"]
+        Docker[Docker build]
+        Container[Chimera Container]
+    end
+
+    subgraph Runtime["Runtime Dependencies"]
+        PG[(PostgreSQL)]
+        Redis[(Redis)]
+        MCP[MCP Sense - Telemetry]
+    end
+
+    Code --> Push
+    Push --> Checkout
+    Checkout --> Setup
+    Setup --> Deps
+    Deps --> SpecCheck
+    SpecCheck --> Lint
+    Lint --> Test
+    Test --> Docker
+    Docker --> Container
+    Container --> PG
+    Container --> Redis
+    Container --> MCP
+```
+
+- **CI:** On push/PR to `main`, run checkout → Python setup → `make setup` → `make spec-check` → quality policy checks → `make test`.
+- **Build:** Docker image builds from passing CI.
+- **Runtime:** Container connects to PostgreSQL, Redis, and MCP Sense for persistence, cache, and telemetry.
+
+---
+
+## 9. Next Steps
+
+1. Stakeholder approval of architecture.
+2. Define detailed API contracts (`specs/technical.md`).
+3. Build Chief Agent skeleton using hierarchical swarm pattern.
+4. Set up Docker + PostgreSQL dev environment.
+5. Connect MCP Sense telemetry for logging and auditing.
+
+---
+
+## 10. References
+
+- **a16z:** The Trillion Dollar AI Code Stack
+- **OpenClaw:** Agent social networking framework
+- **MoltBook:** Social media for bots
+- **Project Chimera SRS**
+
+---
+
+_Document Version: 1.0.0_  
+_Last Updated: February 4, 2025_  
+_Next Review: February 6, 2025_

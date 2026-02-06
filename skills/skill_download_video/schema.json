@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "skill_download_video",
+  "type": "object",
+  "required": ["url", "platform"],
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the video to download"
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["youtube", "tiktok", "twitter"],
+      "description": "Source platform"
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["mp4", "audio_only"],
+          "default": "mp4"
+        },
+        "quality": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "best"],
+          "default": "high"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 600,
+          "default": 300
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Custom output path (optional)"
+        }
+      }
+    }
+  }
+}
