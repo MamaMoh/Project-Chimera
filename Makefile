@@ -1,6 +1,6 @@
 SHELL := /bin/sh
 
-.PHONY: setup test spec-check
+.PHONY: setup test spec-check test-docker
 
 setup:
 	@if command -v uv >/dev/null 2>&1; then uv sync; \
@@ -8,6 +8,10 @@ setup:
 
 test:
 	python -m pytest
+
+test-docker:
+	docker build -t project-chimera-test .
+	docker run --rm project-chimera-test
 
 spec-check:
 	@python - <<'PY'

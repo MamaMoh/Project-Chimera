@@ -19,7 +19,7 @@ Purpose: Map specs to tests and validation checks.
 | FR-5.0 | `commerce/README.md` |
 | FR-5.1 | `commerce/README.md` |
 | FR-5.2 | `agents/roles.md` |
-| FR-6.0 | `services/planner/README.md`, `services/worker/README.md`, `services/judge/README.md`, `specs/technical.md` |
+| FR-6.0 | `services/planner/README.md`, `services/worker/README.md`, `services/judge/README.md`, `specs/technical.md`, `tests/test_services_flow.py` |
 | FR-6.1 | `architecture/adr/0001-initial-architecture.md`, `specs/technical.md` |
 | NFR-1.0 | `agents/protocols.md` |
 | NFR-1.1 | `hitl/README.md`, `specs/technical.md` |

@@ -18,7 +18,10 @@ def test_skill_schemas_define_required_inputs() -> None:
 
 
 def test_skill_post_social_contract_inputs() -> None:
-    payload = {}
+    payload = {
+        "platform": "twitter",
+        "text_content": "Hello world",
+    }
     required_inputs = {"platform", "text_content"}
     missing = required_inputs - set(payload.keys())
     assert not missing, f"Missing required inputs: {sorted(missing)}"
