@@ -1,12 +1,8 @@
-from __future__ import annotations
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from uuid import uuid4
-from typing import Optional
+"""Orchestrator – Chief Agent coordination. No logic implemented; see research/architecture_strategy.md."""
 
-from services.judge.judge_service import Decision, JudgeService
-from services.planner.planner_service import PlannerService
-from services.worker.worker_service import WorkerService
+from __future__ import annotations
+
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -15,65 +11,27 @@ class OrchestratorState:
     updated_at: str
 
 
+@dataclass(frozen=True)
+class Decision:
+    task_id: str
+    decision: str
+    rationale: str
+    state_version: str
+    created_at: str
+
+
 class OrchestratorService:
     """
-    OrchestratorService coordinates the Planner, Worker, and Judge services.
-    
-    Features:
-    - Tracks state version with timestamp for traceability
-    - Supports test/failure injection for TDD
-    - Fully mockable sub-services for pytest
+    Coordinates Planner → Worker → Judge cycle.
+    Contract and behaviour are defined in research/architecture_strategy.md and specs.
     """
-    def __init__(
-        self,
-        planner: Optional[PlannerService] = None,
-        worker: Optional[WorkerService] = None,
-        judge: Optional[JudgeService] = None,
-        fail_worker: bool = False
-    ) -> None:
-        self._planner = planner or PlannerService()
-        self._worker = worker or WorkerService()
-        self._judge = judge or JudgeService()
-        self._fail_worker = fail_worker
-        self._state = OrchestratorState(
-            state_version=str(uuid4()),
-            updated_at=datetime.now(timezone.utc).isoformat()
-        )
+
+    def __init__(self) -> None:
+        pass
 
     def run_once(self, goal_description: str) -> Decision:
-        """Run one cycle of planning → execution → judging."""
-        # 1. Planning
-        task = self._planner.create_task(
-            task_type="generate_content",
-            goal_description=goal_description,
-            required_resources=[],
-            priority="medium"
+        """Run one cycle. Not implemented – implement to satisfy tests and specs."""
+        raise NotImplementedError(
+            "Orchestrator logic not implemented. "
+            "See research/architecture_strategy.md §2.3–2.4 and specs/functional.md FR-6.0/FR-6.1."
         )
-
-        # 2. Execution
-        if self._fail_worker:
-            # Injected failure for TDD / contract testing
-            result = {
-                "error": {
-                    "code": "WORKER_FAILURE",
-                    "message": "Injected failure for testing"
-                }
-            }
-        else:
-            result = self._worker.execute_task(task)
-
-        # 3. Judging / decision-making
-        decision = self._judge.review_result(result, self._state.state_version)
-
-        # 4. Update orchestrator state
-        self._state = OrchestratorState(
-            state_version=str(uuid4()),
-            updated_at=datetime.now(timezone.utc).isoformat()
-        )
-
-        return decision
-
-    @property
-    def state(self) -> OrchestratorState:
-        """Return current orchestrator state for inspection."""
-        return self._state
